@@ -14,16 +14,9 @@ load_dotenv()
 
 set_api_key(os.getenv("ELEVENLABS_API_KEY"))
 API_KEY = os.getenv("OPENAI_API_KEY")
-with open('system.txt', 'r') as f:
-    system = f.read()
 
 
-class Message(BaseModel):
-    role: str
-    content: str
-
-
-async def make_completion(messages, nb_retries: int = 5, delay: int = 30) -> Optional[str]:
+async def make_completion(messages, instruct, nb_retries: int = 5, delay: int = 30) -> Optional[str]:
     """
     Sends a request to the ChatGPT API to retrieve a response based on a list of previous messages.
     """
@@ -39,7 +32,7 @@ async def make_completion(messages, nb_retries: int = 5, delay: int = 30) -> Opt
             try:
                 resp = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
-                    messages=[{"role": "system", "content": system}] + messages
+                    messages=[{"role": "system", "content": instruct}] + messages
                 )
             except openai.error.APIError as e:
                 # Handle API error here, e.g. retry or log
@@ -56,6 +49,11 @@ async def make_completion(messages, nb_retries: int = 5, delay: int = 30) -> Opt
                 counter += 1
                 keep_loop = counter < nb_retries
     return ''
+
+
+def init_system_role():
+    with open('system.txt', 'r') as f:
+        return f.read()
 
 
 def audio_to_html(audio_bytes):
@@ -76,12 +74,12 @@ def text_to_speech_elevenlabs(response):
     return audio_html
 
 
-async def predict(input, history):
+async def predict(input, history, instruct):
     """
     Predict the response of the chatbot and complete a running list of chat history.
     """
     history.append({"role": "user", "content": input})
-    response = await make_completion(history)
+    response = await make_completion(history, instruct)
     history.append({"role": "assistant", "content": response})
     messages = [(history[i]["content"], history[i + 1]["content"]) for i in range(0, len(history) - 1, 2)]
     audio_html = text_to_speech_elevenlabs(response)
@@ -93,6 +91,7 @@ Gradio Blocks low-level API that allows to create custom web applications (here 
 """
 with gr.Blocks() as demo:
     logger.info("Starting Demo...")
+    system_instruct = gr.Textbox(value=init_system_role)
     chatbot = gr.Chatbot(label="Wisi")
     state = gr.State([])
     with gr.Row():
@@ -100,7 +99,7 @@ with gr.Blocks() as demo:
         output_html = gr.HTML(label="Chat's Voice", value='')
         output_html.visible = False
 
-    txt.submit(predict, [txt, state], [chatbot, state, output_html])
+    txt.submit(predict, [txt, state, system_instruct], [chatbot, state, output_html])
     txt.submit(lambda x: gr.update(value=''), [txt],[txt])
 
 demo.launch(debug=True)
