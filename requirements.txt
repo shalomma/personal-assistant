@@ -1,7 +1,7 @@
 async_timeout==4.0.2
 elevenlabs==0.2.15
 gradio==3.31.0
-httpx==0.24.0
 loguru==0.7.0
 pydantic==1.10.7
 python-dotenv==1.0.0
+openai==0.27.6

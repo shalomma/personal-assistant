@@ -1,7 +1,5 @@
 import os
-import httpx
 import base64
-import asyncio
 from io import BytesIO
 from typing import Optional
 import async_timeout
@@ -10,6 +8,7 @@ from dotenv import load_dotenv
 from elevenlabs import generate, set_api_key
 from loguru import logger
 from pydantic import BaseModel
+import openai
 
 load_dotenv()
 
@@ -32,34 +31,31 @@ async def make_completion(messages, nb_retries: int = 5, delay: int = 30) -> Opt
         "Content-Type": "application/json",
         "Authorization": f"Bearer {API_KEY}"
     }
-    try:
-        async with async_timeout.timeout(delay=delay):
-            async with httpx.AsyncClient(headers=header) as aio_client:
-                counter = 0
-                keep_loop = True
-                while keep_loop:
-                    logger.debug(f"Chat/Completions Nb Retries : {counter}")
-                    try:
-                        resp = await aio_client.post(
-                            url="https://api.openai.com/v1/chat/completions",
-                            json={
-                                "model": "gpt-3.5-turbo",
-                                "messages": [{"role": "system", "content": system}] + messages
-                            }
-                        )
-                        logger.debug(f"Status Code : {resp.status_code}")
-                        if resp.status_code == 200:
-                            return resp.json()["choices"][0]["message"]["content"]
-                        else:
-                            logger.warning(resp.content)
-                            keep_loop = False
-                    except Exception as e:
-                        logger.error(e)
-                        counter = counter + 1
-                        keep_loop = counter < nb_retries
-    except asyncio.TimeoutError as e:
-        logger.error(f"Timeout {delay} seconds !")
-    return None
+    async with async_timeout.timeout(delay=delay):
+        counter = 0
+        keep_loop = True
+        while keep_loop:
+            logger.debug(f"Chat/Completions Nb Retries : {counter}")
+            try:
+                resp = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "system", "content": system}] + messages
+                )
+            except openai.error.APIError as e:
+                # Handle API error here, e.g. retry or log
+                print(f"OpenAI API returned an API Error: {e}")
+                pass
+            except openai.error.APIConnectionError as e:
+                # Handle connection error here
+                print(f"Failed to connect to OpenAI API: {e}")
+                pass
+                logger.error(e)
+            else:
+                return resp["choices"][0]["message"]["content"]
+            finally:
+                counter += 1
+                keep_loop = counter < nb_retries
+    return ''
 
 
 def audio_to_html(audio_bytes):
@@ -105,5 +101,6 @@ with gr.Blocks() as demo:
         output_html.visible = False
 
     txt.submit(predict, [txt, state], [chatbot, state, output_html])
+    txt.submit(lambda x: gr.update(value=''), [txt],[txt])
 
 demo.launch(debug=True)
