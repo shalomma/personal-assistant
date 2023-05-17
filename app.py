@@ -1,24 +1,19 @@
-import gradio as gr
-
-import asyncio, httpx
-import async_timeout
-
-from loguru import logger
-from typing import Optional, List
-from pydantic import BaseModel
-
 import os
-from dotenv import load_dotenv
-
-from io import BytesIO
+import httpx
 import base64
-
+import asyncio
+from io import BytesIO
+from typing import Optional
+import async_timeout
+import gradio as gr
+from dotenv import load_dotenv
 from elevenlabs import generate, set_api_key
-
-set_api_key("42eadb3c99b3b386f886c1cab39d4839")
+from loguru import logger
+from pydantic import BaseModel
 
 load_dotenv()
 
+set_api_key(os.getenv("ELEVENLABS_API_KEY"))
 API_KEY = os.getenv("OPENAI_API_KEY")
 with open('system.txt', 'r') as f:
     system = f.read()
