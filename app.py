@@ -91,11 +91,11 @@ Gradio Blocks low-level API that allows to create custom web applications (here 
 """
 with gr.Blocks() as demo:
     logger.info("Starting Demo...")
-    system_instruct = gr.Textbox(value=init_system_role)
+    system_instruct = gr.Textbox(label='System Instructions', value=init_system_role)
     chatbot = gr.Chatbot(label="Wisi")
     state = gr.State([])
     with gr.Row():
-        txt = gr.Textbox(show_label=False, placeholder="Enter text and press enter").style(container=False)
+        txt = gr.Textbox(show_label=False, placeholder="Enter text and press enter")  # .style(container=False)
         output_html = gr.HTML(label="Chat's Voice", value='')
         output_html.visible = False
 
