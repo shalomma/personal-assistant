@@ -11,7 +11,8 @@ import azure.cognitiveservices.speech as speechsdk
 speech_config = speechsdk.SpeechConfig(
     subscription=os.getenv('AZURE_SPEECH_KEY'), region=os.getenv('AZURE_SPEECH_REGION'))
 speech_config.speech_recognition_language = "en-US"
-speech_config.speech_synthesis_voice_name = "en-US-SaraNeural"
+speech_config.speech_synthesis_voice_name = "en-US-AriaNeural"
+
 audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
 speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
 speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
