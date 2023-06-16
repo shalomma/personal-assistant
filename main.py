@@ -50,14 +50,14 @@ def is_waked():
 
 
 def get_user_stt():
-    print('<<<  ', end ="")
+    print('<<<  ', end="")
     text = speech_recognizer.recognize_once_async().get().text
     print(text)
     return text
 
 
-def get_chat_tts():
-    speech_synthesizer.speak_text_async(text_chat).get()
+def get_chat_tts(text):
+    speech_synthesizer.speak_text_async(text).get()
 
 
 if __name__ == '__main__':
@@ -65,14 +65,16 @@ if __name__ == '__main__':
         print('Waiting for wake word: Jarvis')
         while True:
             if is_waked():
+                get_chat_tts('Hi!')
                 while True:
                     text_user = get_user_stt()
                     if text_user == '':
                         recorder.start()
+                        print('break')
                         break
                     text_chat = conversation.predict(input=text_user)
                     print('>>>', text_chat)
-                    get_chat_tts()
+                    get_chat_tts(text_chat)
     except KeyboardInterrupt:
         print('Stopping ...')
     finally:
