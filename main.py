@@ -1,10 +1,12 @@
 import os
+import pvporcupine
+from pvrecorder import PvRecorder
 from langchain.llms import OpenAI
+from langchain import PromptTemplate
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
 import azure.cognitiveservices.speech as speechsdk
-import pvporcupine
-from pvrecorder import PvRecorder
+
 
 speech_config = speechsdk.SpeechConfig(
     subscription=os.getenv('AZURE_SPEECH_KEY'), region=os.getenv('AZURE_SPEECH_REGION'))
@@ -18,10 +20,19 @@ porcupine = pvporcupine.create(access_key=os.getenv('PICOVOICE_ACCESS_KEY'), key
 recorder = PvRecorder(device_index=-1, frame_length=512)
 recorder.start()
 
+with open('system.txt', 'r') as f:
+    template = f.read()
+
+prompt = PromptTemplate(
+    input_variables=["history", "input"],
+    template=template,
+)
+
 llm = OpenAI(temperature=0)
 conversation = ConversationChain(
     llm=llm,
     verbose=False,
+    prompt=prompt,
     memory=ConversationBufferMemory()
 )
 
