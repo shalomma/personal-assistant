@@ -1,7 +1,7 @@
 import os
 import pvporcupine
 from pvrecorder import PvRecorder
-from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain import PromptTemplate
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
@@ -29,7 +29,7 @@ prompt = PromptTemplate(
     template=template,
 )
 
-llm = OpenAI(temperature=0)
+llm = ChatOpenAI(temperature=0)
 conversation = ConversationChain(
     llm=llm,
     verbose=False,
