@@ -1,8 +1,6 @@
 async_timeout==4.0.2
 azure_cognitiveservices_speech==1.29.0
-langchain==0.0.201
+langchain==0.0.208
 openai==0.27.8
-pvporcupine==2.2.1
-pvrecorder==1.1.1
 Requests==2.31.0
-fastapi==0.88.0
+fastapi==0.97.0
