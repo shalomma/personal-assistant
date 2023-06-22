@@ -5,3 +5,4 @@ openai==0.27.8
 pvporcupine==2.2.1
 pvrecorder==1.1.1
 Requests==2.31.0
+fastapi==0.88.0
