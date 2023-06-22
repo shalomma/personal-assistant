@@ -1,6 +1,4 @@
 import os
-import pvporcupine
-from pvrecorder import PvRecorder
 from langchain.llms import OpenAI
 from langchain import PromptTemplate
 from langchain.chains import ConversationChain
@@ -17,9 +15,9 @@ audio_config = speechsdk.audio.AudioConfig(use_default_microphone=True)
 speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
 speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
 
-porcupine = pvporcupine.create(access_key=os.getenv('PICOVOICE_ACCESS_KEY'), keywords=["jarvis"])
-recorder = PvRecorder(device_index=-1, frame_length=512)
-recorder.start()
+model = speechsdk.KeywordRecognitionModel("./models/0b2b7d58-99ab-48d5-908d-5e00120f8e40.table")
+keyword_recognizer = speechsdk.KeywordRecognizer()
+keyword_recognition = keyword_recognizer.recognize_once_async(model)
 
 with open('system.txt', 'r') as f:
     template = f.read()
@@ -38,17 +36,6 @@ conversation = ConversationChain(
 )
 
 
-def is_waked():
-    pcm = recorder.read()
-    result = porcupine.process(pcm)
-    if result >= 0:
-        recorder.stop()
-        print('Detected')
-        return True
-    else:
-        return False
-
-
 def get_user_stt():
     print('<<<  ', end="")
     text = speech_recognizer.recognize_once_async().get().text
@@ -62,14 +49,13 @@ def get_chat_tts(text):
 
 if __name__ == '__main__':
     try:
-        print('Waiting for wake word: Jarvis')
+        print('Wizi is waiting...')
         while True:
-            if is_waked():
-                get_chat_tts('Hi!')
+            if keyword_recognition.get():
+                print('Speak to Wizi!')
                 while True:
                     text_user = get_user_stt()
                     if text_user == '':
-                        recorder.start()
                         print('break')
                         break
                     text_chat = conversation.predict(input=text_user)
@@ -78,5 +64,5 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print('Stopping ...')
     finally:
-        recorder.delete()
-        porcupine.delete()
+        stop_future = keyword_recognizer.stop_recognition_async()
+        stop_future.get()
