@@ -1,5 +1,5 @@
 import os
-from langchain.llms import OpenAI
+from langchain.chat_models import AzureChatOpenAI
 from langchain import PromptTemplate
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
@@ -27,12 +27,18 @@ prompt = PromptTemplate(
     template=template,
 )
 
-llm = OpenAI(temperature=0)
+llm = AzureChatOpenAI(
+    openai_api_type="azure",
+    deployment_name="chatgpt",
+    openai_api_version="2023-03-15-preview",
+    temperature=0.7,
+)
+memory = ConversationBufferMemory(memory_key="history", return_messages=True)
 conversation = ConversationChain(
     llm=llm,
     verbose=False,
     prompt=prompt,
-    memory=ConversationBufferMemory()
+    memory=memory
 )
 
 
