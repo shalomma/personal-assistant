@@ -1,11 +1,17 @@
 import os
-from langchain.chat_models import AzureChatOpenAI
+import pygame
 from langchain import PromptTemplate
 from langchain.chains import ConversationChain
+from langchain.chat_models import AzureChatOpenAI
 from langchain.memory import ConversationBufferMemory
 import azure.cognitiveservices.speech as speechsdk
-from playsound import playsound
 
+
+pygame.init()
+boot_sound = pygame.mixer.Sound('./sounds/success-48018.mp3')
+start_sound = pygame.mixer.Sound('./sounds/start-13691.mp3')
+stop_sound = pygame.mixer.Sound('./sounds/stop-13692.mp3')
+boot_sound.play()
 
 speech_config = speechsdk.SpeechConfig(
     subscription=os.getenv('AZURE_SPEECH_KEY'), region=os.getenv('AZURE_SPEECH_REGION'))
@@ -59,13 +65,13 @@ if __name__ == '__main__':
         while True:
             print('Wizi is waiting...')
             if keyword_recognition.get():
-                playsound('./sounds/start-13691.mp3')
+                start_sound.play()
                 print('Speak to Wizi!')
                 while True:
                     text_user = get_user_stt()
                     if text_user == '':
                         print('break')
-                        playsound('./sounds/stop-13692.mp3')
+                        stop_sound.play()
                         keyword_recognition = keyword_recognizer.recognize_once_async(model)
                         break
                     text_chat = conversation.predict(input=text_user)
