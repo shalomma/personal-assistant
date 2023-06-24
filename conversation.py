@@ -5,9 +5,9 @@ from langchain.memory import ConversationBufferMemory
 
 
 class Conversation:
-    def __init__(self):
+    def __init__(self, username):
         with open('system.txt', 'r') as f:
-            template = f.read()
+            template = f.read().replace('{username}', username)
 
         prompt = PromptTemplate(
             input_variables=["history", "input"],
