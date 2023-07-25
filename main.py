@@ -1,14 +1,14 @@
 import asyncio
 
-from tts import TTSAzure
 from stt import STTAzure
+from tts import TTSAzure
 from sounds import Sounds
 from wake_word import WakeWord
 from conversation import Conversation
 from send import Sender, TextMessages
 
 
-username='Naomi'
+username = 'Naomi'
 
 Sounds.boot.play()
 
